@@ -5,19 +5,29 @@
 param([switch]$Auto)
 $ErrorActionPreference = 'SilentlyContinue'
 
-# Resolve the bot dir from the script's own location, and python from PATH
-# (override either with the PLAN_PYTHON env var). No hard-coded machine paths.
-$dir = $PSScriptRoot
-$py  = $env:PLAN_PYTHON
-if (-not $py) {
-    foreach ($c in 'py', 'python', 'python3') {
-        $s = (Get-Command $c -ErrorAction SilentlyContinue).Source
-        if ($s) { $py = $s; break }
-    }
-}
+# Resolve the bot dir from the script's own location, then find python.
+# Resolution order: PLAN_PYTHON env var -> PLAN_PYTHON in bot/.env -> PATH (skipping the
+# Windows "App execution alias" Store stub, which prints a message and is not a real interpreter).
+# No hard-coded machine paths — set PLAN_PYTHON in .env if python isn't a real entry on PATH.
+$dir     = $PSScriptRoot
 $err     = Join-Path $dir 'bot.err.log'
 $out     = Join-Path $dir 'bot.out.log'
 $envFile = Join-Path $dir '.env'
+
+$py = $env:PLAN_PYTHON
+if (-not $py -and (Test-Path $envFile)) {
+    $m = Select-String -Path $envFile -Pattern '^[ \t]*PLAN_PYTHON[ \t]*=' | Select-Object -First 1
+    if ($m) { $py = ((($m.Line -split '=', 2)[1]) -split '#', 2)[0].Trim().Trim('"').Trim("'") }
+}
+if (-not $py) {
+    foreach ($c in 'py', 'python', 'python3') {
+        $src = (Get-Command $c -ErrorAction SilentlyContinue).Source
+        if ($src -and $src -notmatch 'WindowsApps') {
+            $probe = & $src -c "print('PYOK')" 2>$null   # a real python prints PYOK; the Store stub does not
+            if ($LASTEXITCODE -eq 0 -and $probe -eq 'PYOK') { $py = $src; break }
+        }
+    }
+}
 
 # login path: honour the on/off switch in .env (missing key => default ON)
 if ($Auto -and (Test-Path $envFile)) {
