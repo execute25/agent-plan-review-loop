@@ -4,6 +4,10 @@ A dedicated Telegram bot that drives the `plan-loop.sh` → `code-run.sh` → `d
 pipeline with inline buttons. Standalone — give it **its own** BotFather token (it must be
 the only poller for that token).
 
+> **Optional — do this last.** The bot is just a frontend over the CLI scripts; it adds no
+> capability they lack. Get the [5-minute CLI flow](../README.md#try-it-in-5-minutes-cli-only)
+> working first, *then* come back and add the bot. It needs Python and its own Telegram token.
+
 > **Heads up:** the bot's user-facing strings are currently in Russian. The functionality is
 > language-agnostic; PRs to internationalize are welcome. The rest of this doc is in English.
 

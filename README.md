@@ -15,6 +15,45 @@ can already run on another model family via Cursor. Drive it from the CLI or a T
 
 ---
 
+## Try it in 5 minutes (CLI only)
+
+No Telegram, no deploy, no Python — just plan a ticket and (optionally) have it implemented on
+a throwaway branch. **Telegram and deploy are optional, advanced features — skip them for now.**
+
+**1. Get the prerequisites** — the [Claude Code](https://claude.com/claude-code) CLI
+(authenticated), `git`, and `bash` (Git Bash or WSL on Windows). Then clone and self-check:
+
+```bash
+git clone https://github.com/execute25/agent-plan-review-loop.git
+bash agent-plan-review-loop/scripts/doctor.sh      # prints OK/ERR for each requirement
+```
+
+**2. Plan a ticket** — from inside the repo you want to change (your *target* repo):
+
+```bash
+cd /path/to/your-project
+REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/plan-loop.sh TASK-1 "add a CSV export button to the reports page"
+```
+
+An Author drafts a plan, an adversarial Reviewer tears it apart against your real code, and the
+loop repeats until it's **APPROVED** (exit `0`) — or pauses to ask you a question (exit `4`).
+
+**3. (Optional) Implement the approved plan** on an isolated branch:
+
+```bash
+REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/code-run.sh TASK-1
+```
+
+**What you get:** in your target repo, under `docs/tickets/plans/` — `TASK-1-plan.md`,
+`TASK-1-review.md`, a `.log`, and (after step 3) `TASK-1.diff` on branch `auto/TASK-1`. These
+are *local-ignored* (added to `.git/info/exclude`), so they never show in `git status`. The
+flow **never pushes, merges, or deploys** — you review the diff and ship it yourself.
+
+→ Full walkthrough, exactly what gets modified, and troubleshooting: **[docs/quickstart.md](docs/quickstart.md)**.
+Deploying the coded branch is a separate, opt-in step — see [Deploy](#deploy-optional-pluggable).
+
+---
+
 ## What it does
 
 ```
@@ -53,7 +92,8 @@ can already run on another model family via Cursor. Drive it from the CLI or a T
 - **Python 3.10+** — only for the optional Telegram bot.
 
 The whole thing shells out to `claude -p`, so it must run on a machine where Claude Code is
-installed and your target repos are checked out.
+installed and your target repos are checked out. Run `bash scripts/doctor.sh` to verify these
+in one shot (Python/Telegram/deploy are **not** required for the CLI flow).
 
 ---
 
@@ -71,34 +111,17 @@ There is nothing to build. The CLI is just bash scripts; the bot needs `pip inst
 
 ---
 
-## Quickstart
+## Optional: advanced features
 
-### 1. Plan a ticket (CLI)
+Everything below is **optional** — the [5-minute CLI flow](#try-it-in-5-minutes-cli-only) above
+is the whole core. Add these only once the basic `plan-loop.sh` → `code-run.sh` flow works for you.
 
-```bash
-# from inside the target repo (REPO defaults to the current git toplevel):
-bash /path/to/agent-plan-review-loop/scripts/plan-loop.sh TASK-1 "add a CSV export button to the reports page"
-
-# …or point at the repo explicitly:
-REPO=/path/to/your-repo bash scripts/plan-loop.sh TASK-1 "free-text goal, or a Jira URL"
-```
-
-The plan, review, and log land in `your-repo/docs/tickets/plans/TASK-1-*`. The loop exits
-`0` on approval.
-
-### 2. Implement the approved plan (CLI)
-
-```bash
-REPO=/path/to/your-repo bash scripts/code-run.sh TASK-1
-```
-
-It creates `auto/TASK-1`, writes the code + tests there, and saves a `TASK-1.diff` for you
-to review, then merge and ship by hand.
-
-### 3. Drive it all from Telegram
-
-A bot wraps the loop with inline buttons (answer questions, write code, deploy), free-text
-steering mid-run, photo/screenshot attachments, and parallel tickets. See **[bot/README.md](bot/README.md)**.
+- **Telegram bot** — drive the loop from your phone: inline buttons (answer questions, write
+  code, deploy), free-text/photo steering, parallel tickets. Needs Python + its own BotFather
+  token, and adds no capability the CLI lacks. See **[bot/README.md](bot/README.md)**.
+- **Deploy** — gate-and-ship the coded branch with your own command. See [Deploy](#deploy-optional-pluggable).
+- **Project rules** — house policies injected into every prompt (e.g. "no DB migrations"). See
+  [Project rules](#project-rules-rules_file).
 
 ---
 
