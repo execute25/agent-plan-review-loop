@@ -21,11 +21,13 @@ No Telegram, no deploy, no Python — just plan a ticket and (optionally) have i
 a throwaway branch. **Telegram and deploy are optional, advanced features — skip them for now.**
 
 **1. Get the prerequisites** — the [Claude Code](https://claude.com/claude-code) CLI
-(authenticated), `git`, and `bash` (Git Bash or WSL on Windows). Then clone and self-check:
+(authenticated), `git`, and `bash` (Git Bash or WSL on Windows). Then clone, and run the
+preflight **from the repo you want to change**:
 
 ```bash
 git clone https://github.com/execute25/agent-plan-review-loop.git
-bash agent-plan-review-loop/scripts/doctor.sh      # prints OK/ERR for each requirement
+cd /path/to/your-project                                            # the repo you want to change
+REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/doctor.sh  # prints OK/ERR for each requirement
 ```
 
 **2. Plan a ticket** — from inside the repo you want to change (your *target* repo):

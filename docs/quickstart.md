@@ -9,14 +9,9 @@ shell. Telegram and deploy are separate, opt-in features; ignore them until this
 - The [Claude Code](https://claude.com/claude-code) CLI, **authenticated** (run `claude` once).
 - `git` and `bash` (on Windows: Git Bash or WSL — these are bash scripts, not PowerShell).
 
-Check all of it at once:
-
-```bash
-bash scripts/doctor.sh
-```
-
-It prints `OK` / `ERR` for each requirement and exits non-zero if a required tool is missing.
-It does **not** require Python, Telegram, or any deploy configuration.
+You'll verify all of this with `scripts/doctor.sh` in **step 2** (after cloning). It prints
+`OK`/`ERR` for each requirement and exits non-zero only if a required CLI tool is missing — it
+does **not** require Python, Telegram, or any deploy configuration.
 
 ## 1. Clone the toolkit
 
@@ -26,12 +21,23 @@ git clone https://github.com/execute25/agent-plan-review-loop.git
 
 Nothing to build — the CLI is plain bash.
 
-## 2. Plan a ticket
+## 2. Check your setup
 
-From inside the repo you want to change (your **target** repo, not the toolkit):
+Run the preflight **from the repo you want to change** (your *target* repo, not the toolkit):
 
 ```bash
 cd /path/to/your-project
+REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/doctor.sh
+```
+
+It exits non-zero only if a required CLI tool (`git` / `bash` / `claude`) or the plan template
+is missing. No target repo yet? It only warns — `cd` into one before the next step.
+
+## 3. Plan a ticket
+
+From your target repo (stay in the directory from step 2):
+
+```bash
 REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/plan-loop.sh TASK-1 "add a CSV export button to the reports page"
 ```
 
@@ -42,7 +48,7 @@ yours to choose — any `letters/digits/.-_` (e.g. `TASK-1`, `TP-1234`).
 Exit codes: `0` approved · `4` it needs a decision from you (see troubleshooting) · `2`/`3`
 it couldn't converge.
 
-## 3. (Optional) Implement the approved plan
+## 4. (Optional) Implement the approved plan
 
 ```bash
 REPO="$PWD" bash /path/to/agent-plan-review-loop/scripts/code-run.sh TASK-1
@@ -57,7 +63,7 @@ In your **target repo**:
 
 - **Creates `docs/tickets/plans/`** and writes the ticket artifacts there:
   `TASK-1-plan.md`, `TASK-1-review.md`, an optional `TASK-1-questions.md`, a `TASK-1.log`,
-  and — after step 3 — `TASK-1.diff`.
+  and — after the implement step — `TASK-1.diff`.
 - **Adds `docs/tickets/plans/` to `.git/info/exclude`** — a *local* ignore. Your committed
   `.gitignore` is untouched and these files are never staged, so they won't appear in
   `git status`.
@@ -80,7 +86,7 @@ The plan files are local-ignored, so they never pollute `git status`. To remove 
 ```bash
 # in your target repo:
 rm -rf docs/tickets/plans
-git branch -D auto/TASK-1            # only if you ran step 3
+git branch -D auto/TASK-1            # only if you ran the implement step
 # in the toolkit:
 git -C /path/to/agent-plan-review-loop worktree prune
 ```

@@ -58,14 +58,18 @@ else
   err "missing ${TOOLKIT_DIR}/templates/_TEMPLATE.md — incomplete clone of the toolkit?"
 fi
 
-# --- target git repo (current dir, or $REPO) ---
+# --- target git repo (current dir, or $REPO) — context for plan-loop, NOT a hard dependency ---
+# Use `git rev-parse` (not `-d "$REPO/.git"`) so git worktrees, where .git is a FILE, also pass.
+# An absent target repo is a WARN (you just haven't picked a project yet), not a failure — so
+# running this straight after `git clone` from any directory doesn't error.
+REPO_SET="${REPO:-}"
 REPO="${REPO:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
-if [ -n "${REPO}" ] && [ -d "${REPO}/.git" ]; then
-  ok "target git repo — ${REPO}"
-elif [ -n "${REPO}" ]; then
-  err "REPO is set but is not a git repo: ${REPO} (run 'git init' there, or fix REPO)."
+if [ -n "${REPO}" ] && git -C "${REPO}" rev-parse --show-toplevel >/dev/null 2>&1; then
+  ok "target git repo — $(git -C "${REPO}" rev-parse --show-toplevel 2>/dev/null)"
+elif [ -n "${REPO_SET}" ]; then
+  err "REPO is set but is not a git repo: ${REPO_SET} (run 'git init' there, or fix REPO)."
 else
-  err "no target git repo — cd into your project, or set REPO=/path/to/your-repo (plan-loop.sh needs a git repo)."
+  warn "no target repo here — cd into the repo you want to change, or set REPO=/path/to/it (plan-loop.sh needs one)."
 fi
 
 # --- optional, never fatal: just informational ---

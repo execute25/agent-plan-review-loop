@@ -38,7 +38,8 @@ ticket="${1// /}"
 [[ "$ticket" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "Bad id: ${1}"
 
 REPO="${REPO:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
-[[ -n "$REPO" && -d "$REPO/.git" ]] || die "Set REPO to a git repo."
+# `git rev-parse` (not `-d "$REPO/.git"`) so git worktrees, where .git is a FILE, also pass.
+[[ -n "$REPO" ]] && git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 || die "Set REPO to a git repo (or worktree)."
 SHIP_PROJECT="${SHIP_PROJECT:-$(basename "$REPO")}"
 [[ -n "${DEPLOY_CMD:-}" ]] || die "DEPLOY_CMD is required — the command that deploys your merged code (see examples/)."
 
