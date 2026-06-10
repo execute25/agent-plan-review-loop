@@ -1,0 +1,22 @@
+*.log
+.DS_Store
+Thumbs.db
+
+# Secrets & local config — NEVER commit
+.env
+.env.testing
+bot/.env
+
+# Private data: prod DB schema dumps, etc. (keep these OUT of the repo entirely)
+.dumps/
+
+# Transient working state
+__pycache__/
+*.pyc
+.worktrees/
+
+# OS / editor junk
+*.lnk
+*.swp
+.idea/
+.vscode/
